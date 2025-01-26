@@ -9,7 +9,7 @@ from models import db, Plant
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///plants.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.json.compact = True
+app.json.compact = False
 
 migrate = Migrate(app, db)
 db.init_app(app)
@@ -17,10 +17,30 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self):
+        response_list = [plant.to_dict() for plant in Plant.query.all()]
+        return make_response( response_list, 200 )
+    
+    def post(self):
+        new_post = Plant(
+            name = request.form['name'],
+            image = request.form['image'],
+            price = request.form['price'],
+        )
+
+        db.session.add(new_post)
+        db.session.commit()
+
+        return make_response( new_post.to_dict(), 201, )
+    
+api.add_resource(Plants, '/plants')
 
 class PlantByID(Resource):
-    pass
+    def get(self, id):
+        plant_dict = Plant.query.filter_by(id=id).first().to_dict()
+        return make_response( plant_dict, 200 )
+
+api.add_resource(PlantByID, '/plants/<int:id>')
         
 
 if __name__ == '__main__':
