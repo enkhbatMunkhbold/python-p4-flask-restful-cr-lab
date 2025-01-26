@@ -19,26 +19,27 @@ api = Api(app)
 class Plants(Resource):
     def get(self):
         response_list = [plant.to_dict() for plant in Plant.query.all()]
-        return make_response( response_list, 200 )
+        return make_response( response_list, 200, )
     
     def post(self):
-        new_post = Plant(
-            name = request.form['name'],
-            image = request.form['image'],
-            price = request.form['price'],
+        data = request.get_json()
+        new_record = Plant(
+            name = data['name'],
+            image = data['image'],
+            price = data['price'],
         )
 
-        db.session.add(new_post)
+        db.session.add(new_record)
         db.session.commit()
 
-        return make_response( new_post.to_dict(), 201, )
+        return make_response( new_record.to_dict(), 201, )
     
 api.add_resource(Plants, '/plants')
 
 class PlantByID(Resource):
     def get(self, id):
         plant_dict = Plant.query.filter_by(id=id).first().to_dict()
-        return make_response( plant_dict, 200 )
+        return make_response( plant_dict, 200, )
 
 api.add_resource(PlantByID, '/plants/<int:id>')
         
